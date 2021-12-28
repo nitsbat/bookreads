@@ -1,0 +1,118 @@
+It is the replica of the GoodRead site.
+This project is said too highly scalable and available and very good in performance. 
+We will be dealing with millions of millions data.
+This site is meant to be very fast despite the fact that we will be using large amounts of book data.
+
+The overall site would look like this - https://youtu.be/LxVGFBRpEFM
+
+*************** 02 About the app - Build a book tracker app (Spring Boot + Cassandra) *********************
+
+Data is taken from openlibrary.org
+
+Always start the app development with the user experience. Start of the user experience first and then system design  and then the system architecture.
+
+Step -1 User Experience (UX)
+
+We gonna have 1 web page for 1 book. It consist of  1 image cover, Title, Author and description.
+Also if the user is logged in there will be a section of Start/End date, rating , status.
+Also if the user click on the author of the book, it should open the Author page.
+
+Author page will now have the author image first and then there should be the list of books written
+by that author to be shown in reverse chronological order. 
+
+There should be a search page. in which there will be a search box and a search button.
+
+We also want people to login. for that we will build a login infrastructure.
+So we will be having a homepage in which we will be having the Login button and the search box.
+
+Last page would be like if a person is logged in the homepage for that user will be the My Books
+which will consist of list of maybe 50 books which the user has read or currently reading.
+
+*************** System Design about the app *********************
+
+- Performant application
+- able to handle large amounts of data
+- Reliable (application should not go down.)
+- BackEnd focussed
+
+The architecture includes Spring Boot which consist of spring mvc to render the HTML page. Also used spring security. We will use non relational database i.e NoSQL like Cassandra. Now to connect our sprint boot application with cassandra we will use Spring 
+data cassandra.
+In cassandra we can't search or use Like for searching like we do in SQL dbs.
+When we do search in cassandra i.e only for search we will use the Openlibrary Web API. So we will just use the inbuilt API of
+OpenLibrary to search for books.
+Also we need pre loading data of all the data in openlibrary to the apache cassandra instance. We need a new spring boot to load that data - Refer this https://youtu.be/SnQXdvFkq4U?t=780
+
+*************************** Cassandra Schema Design ************************
+
+List of our entities : 
+
+1) Book entity - Id , name , description , cover image , publication date
+2) Author entity - Id , name , image
+
+The Book and Author have many to many relationship with each other.
+
+3) User Entity - id , name
+
+The User and Book will have many to many realtionship again.
+
+4) UserBook entity - start date, end date, status, rating
+
+The userbook entity is related to user as one to many relationship. which means one user can rate multiple user books.
+
+For the cassandra or any No SQL dB, the way to choose is different. we need to see what our application requirements are and then
+we will design the schema for the db. What are the application requirements?? What are the common queries need to perform.??
+Following queries will be needed :
+
+1) Given a book id, fetch a book.
+2) Given an author id, find all the books written by that author.
+3) for a given user and a given book what is the userbook i.e status, rating, etc.
+4) Getting user books by book id for a particular user when the user is logged in.
+
+These are the queries which will be required for the application.
+
+Chebotko diagram for queries will be so that it can be converted to the tables :- 
+
+we cannot do the join in cassandra. 
+
+BOOKS BY ID TABLE WILL HAVE : book id, name, desc, cover, author name
+BOOKS BY Author ID WILL HAVE : author Id, name, book ID, book name, cover, published date
+
+There is no order clause in cassandra, hence we will save the books in the descending published date order. so that we will be fetching the data in sorting order. 
+
+Cassandra is a distributed database, the data will be divided into many servers or nodes.
+The data is been distributed on the basis of the parition key. A partition key is used to built the paritions i.e buckets 
+in which it stores the data. In ecah node there will be a partition and the hash is used by cassandra to know which parition will be 
+allocated to the data. So the primary key in every query table will be the partition key. 
+
+so if the book id is the primary key or partition key in the table, then it will be only one record partition in each node cozz
+only one book will have one book id.
+Similarly if the partition key is author id, it will be multi record partition as every author can have multiple books. 
+Now the question can be why we have made the partition key as the author id only. so the reason is that i want to hit only one 
+partition for all the books i have written by a single author. We don't want to hit multiple partitions for fetching all the books
+written by a single author. So it would be very efficient.
+
+So,
+BOOKS BY ID TABLE WILL HAVE : book id as partition key
+BOOKS BY Author ID WILL HAVE : author id as partition key and published date as clustering key used for sorting.
+So in the table books by User id :- we will have user ID as the primary key. Here the fields status and time fields can be clustering key which is meant for sorting the data.
+and in the table of book by user id and book id :- we will have user id and book id botha as the partition key.
+ 
+we alo need to undersatnd the constraint that whether the single partition contains a lot of data or not.
+So a key way to solve this is like introduce a new column or field by yourself which gonna be the partition key. 
+e.g - in the Books by user ID table we can have the year as one more partition key, so we will have the user book read in 2019 as 50 in one partition , then read 100 books in year 20 in second partition and so on. But it should not creates am overhead.
+
+************************************ Setting up hosted Cassandra instance **************** 
+Cassandra use CQL - cassandra query language - it is very similar to the SQL. 
+we just need to make tables and let cassandra do the tasks. We need not to worry about the partition or anything. Just remember 
+cassandra will make partitions on the basis of the partition key and also it will make nodes according to it.
+
+Keyspace is describe as the schema in the cassandra.
+
+various CQL command :- 
+1) describe keyspaces;
+2) describe <keyspace-name>
+3) use <keyspace-name>;
+4) describe tables;
+
+**************** How to connect Database Astra with the spring boot project ********************************
+1) to tell my spring boot app to data astra db - using application properties.
