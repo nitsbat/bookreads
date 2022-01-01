@@ -2,15 +2,15 @@ spring:
   data:
     cassandra:
       keyspace-name: main
-      username: <username>
-      password: <password>
+      username: aCnhuJncxFAjYAQvnZImIZuI
+      password: Iy1dOxHZO13Kffi58H5MHZivbpZm0ZpAUgxTiRgx6nkXXY4hFM4BacYpItL_Lkb,Ui-F8OggqykfhAscJneoJQk31bHlTYqYKaQm6+D.5S2G.kUwpEGeiNuT.4+ogq0T
       schema-action: create-if-not-exists
       request:
         timeout: 10s
       connection:
         connect-timeout: 10s
         init-query-timeout: 10s
-
+spring.main.allow-circular-references: true
 
 
 datastax.astra:
