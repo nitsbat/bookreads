@@ -12,6 +12,9 @@ spring:
         init-query-timeout: 10s
 spring.main.allow-circular-references: true
 
+datadump.location:
+  authors: D:\Tech and Projects\Projects\GoodRead- Highly Scalable App\bookreads\goodreads\src\main\resources\test-authors
+  works: D:\\Tech and Projects\\Projects\\GoodRead- Highly Scalable App\\bookreads\\goodreads\\src\\main\\resources\\test-works
 
 datastax.astra:
   secure-connect-bundle: secure_bundle.zip
