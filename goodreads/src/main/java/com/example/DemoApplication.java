@@ -43,7 +43,8 @@ public class DemoApplication {
     @Value("${datadump.location.works}")
     private String worksDumpLocation;
 
-    @Value("${datadump.location.authors}")
+    @Value("${datadump.location.authors" +
+            "}")
     private String authorsDumpLocation;
 
     public static void main(String[] args) {
@@ -126,11 +127,15 @@ public class DemoApplication {
                                 book.setAuthorIds(authorIds);
                             }
 
+
                             List<String> authorNames = authorIds.stream()
                                     .map(authorId -> authorRepository.findById(authorId))
                                     .map(author -> {
-                                                if (author.isPresent()) return NO_AUTHOR_NAME;
-                                                return author.get().getName();
+                                                if (!author.isPresent()){
+                                                    return NO_AUTHOR_NAME;
+                                                }
+                                                else
+                                                    return author.get().getName();
                                             }
                                     ).collect(Collectors.toList());
                             book.setAuthorNames(authorNames);
